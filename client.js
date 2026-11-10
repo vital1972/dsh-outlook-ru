@@ -151,7 +151,7 @@ window.__ModuleLoader__.load({
       }, [open])
 
       const n = pending.length
-      const lines = pending.slice(0, 8).map((m) => '[' + (m.sender || '?') + '] ' + (m.subject || '(无主题)'))
+      const lines = pending.slice(0, 8).map((m) => '[' + (m.sender || '?') + '] ' + (m.subject || '(без темы)'))
 
       // Click-to-open: POST the entryId to the host open-mail route, which
       // opens the mail in a desktop Outlook inspector AND marks it read.
@@ -190,21 +190,21 @@ window.__ModuleLoader__.load({
           React.createElement('div', {
             className: 'olk-popover',
             role: 'dialog',
-            'aria-label': 'Outlook 新邮件列表',
+            'aria-label': 'Список новых писем Outlook',
             style: { left: left + 'px', top: top + 'px' },
             onClick: (ev) => ev.stopPropagation(),
           },
-            React.createElement('div', { className: 'olk-popover-title', role: 'heading', 'aria-level': 2 }, '📬 新邮件（' + n + '）'),
+            React.createElement('div', { className: 'olk-popover-title', role: 'heading', 'aria-level': 2 }, '📬 Новые письма (' + n + ')'),
             pending.slice(0, 10).map((m, i) => React.createElement('button', {
               key: i,
               type: 'button',
               className: 'olk-mailrow',
               disabled: busy,
               onClick: () => { openMail(m.entryId) },
-              title: '点击在 Outlook 中打开并标记已读',
+              title: 'Открыть в Outlook и отметить прочитанным',
             },
-              '[' + (m.sender || '?') + '] ' + (m.subject || '(无主题)') + ' · ' + (m.received || ''))),
-            React.createElement('div', { className: 'olk-popover-hint' }, '点击邮件可在 Outlook 中打开；在会话里问「有什么新邮件」可读取并清空')),
+              '[' + (m.sender || '?') + '] ' + (m.subject || '(без темы)') + ' · ' + (m.received || ''))),
+            React.createElement('div', { className: 'olk-popover-hint' }, 'Клик по письму откроет его в Outlook; спросите в чате «что нового в почте» — список прочитается и очистится')),
           document.body)
       }
 
@@ -216,8 +216,8 @@ window.__ModuleLoader__.load({
           'data-dsh-plugin': 'dsh-outlook',
           'data-dsh-part': 'sidebar-entry',
           'aria-haspopup': 'dialog',
-          'aria-label': n > 0 ? 'Outlook 新邮件 ' + n + ' 封' : 'Outlook 邮件',
-          title: lines.length > 0 ? lines.join('\n') : 'Outlook 邮件（暂无新邮件）',
+          'aria-label': n > 0 ? 'Новых писем Outlook: ' + n : 'Почта Outlook',
+          title: lines.length > 0 ? lines.join('\n') : 'Почта Outlook (новых писем нет)',
           onClick: () => setOpen((v) => !v),
         },
           React.createElement(MailIcon, { size: wide ? 16 : 18 }),
@@ -260,13 +260,13 @@ window.__ModuleLoader__.load({
           body: JSON.stringify({ entryId: entryId }),
         })
         const data = await res.json().catch(() => null)
-        if (data && data.ok) showToast('📨 已在 Outlook 中打开：' + (data.subject || '(无主题)'))
+        if (data && data.ok) showToast('📨 Открыто в Outlook: ' + (data.subject || '(без темы)'))
         else {
-          showToast('⚠️ 打开失败：' + ((data && data.error) || ('HTTP ' + res.status)), true)
+          showToast('⚠️ Не удалось открыть: ' + ((data && data.error) || ('HTTP ' + res.status)), true)
           beacon('chat-link open failed: ' + ((data && data.error) || ('HTTP ' + res.status)))
         }
       } catch (e) {
-        showToast('⚠️ 打开失败：' + (e && e.message ? e.message : 'network error'), true)
+        showToast('⚠️ Не удалось открыть: ' + (e && e.message ? e.message : 'network error'), true)
         beacon('chat-link open error: ' + (e && e.message))
       }
     }
@@ -314,7 +314,7 @@ window.__ModuleLoader__.load({
             name: 'sidebar.footer.action',
             id: 'newmail-badge',
             order: 10, // above Whale Bay (order 90); matches the old footArea-first position
-            label: 'Outlook 新邮件',
+            label: 'Новые письма Outlook',
           },
           (props) => React.createElement(NewMailRow, props),
         ))

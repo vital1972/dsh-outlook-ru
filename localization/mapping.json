@@ -1,0 +1,80 @@
+{
+  "comment": "Карта русской локализации dsh-outlook v2.11.0. Пути — от корня репозитория.",
+  "files": [
+    {
+      "file": "client.js",
+      "encoding": "utf8",
+      "pairs": [
+        ["(无主题)", "(без темы)"],
+        ["'aria-label': 'Outlook 新邮件列表'", "'aria-label': 'Список новых писем Outlook'"],
+        ["'📬 新邮件（' + n + '）'", "'📬 Новые письма (' + n + ')'"],
+        ["title: '点击在 Outlook 中打开并标记已读'", "title: 'Открыть в Outlook и отметить прочитанным'"],
+        ["'点击邮件可在 Outlook 中打开；在会话里问「有什么新邮件」可读取并清空'", "'Клик по письму откроет его в Outlook; спросите в чате «что нового в почте» — список прочитается и очистится'"],
+        ["'Outlook 新邮件 ' + n + ' 封' : 'Outlook 邮件'", "'Новых писем Outlook: ' + n : 'Почта Outlook'"],
+        ["'Outlook 邮件（暂无新邮件）'", "'Почта Outlook (новых писем нет)'"],
+        ["'📨 已在 Outlook 中打开：'", "'📨 Открыто в Outlook: '"],
+        ["'⚠️ 打开失败：'", "'⚠️ Не удалось открыть: '"],
+        ["label: 'Outlook 新邮件'", "label: 'Новые письма Outlook'"]
+      ]
+    },
+    {
+      "file": "index.js",
+      "encoding": "utf8",
+      "pairs": [
+        ["[在Outlook打开](http://127.0.0.1:3080", "[Открыть в Outlook](http://127.0.0.1:3080"],
+        ["[打开](http://127.0.0.1:3080", "[Открыть](http://127.0.0.1:3080"],
+        ["\"Inbox/ProjectA\", \"已发送\"", "\"Inbox/ProjectA\", \"Отправленные\""],
+        ["\"已发送\"/\"Sent Items\", \"草稿\"/\"Drafts\"", "\"Отправленные\"/\"Sent Items\", \"Черновики\"/\"Drafts\""],
+        ["          '收件人: ' + a.to + (a.cc ? '\\n抄送: ' + a.cc : '') + (a.bcc ? '\\n密送: ' + a.bcc : '') + '\\n主题: ' + a.subject\n          + (att.lines ? '\\n附件: ' + att.lines : '')\n          + '\\n\\n正文:\\n' + String(a.body),", "          'Кому: ' + a.to + (a.cc ? '\\nКопия: ' + a.cc : '') + (a.bcc ? '\\nСкрытая копия: ' + a.bcc : '') + '\\nТема: ' + a.subject\n          + (att.lines ? '\\nВложения: ' + att.lines : '')\n          + '\\n\\nТекст письма:\\n' + String(a.body),"],
+        ["          recText = '\\n周期: ' + rec.type + (rec.interval ? ' x' + rec.interval : '')\n          if (rec.daysOfWeek && rec.daysOfWeek.length) recText += ' on ' + rec.daysOfWeek.join(',')\n          if (rec.count) recText += ', ' + rec.count + '次'\n          else if (rec.until) recText += ', until ' + rec.until", "          recText = '\\nПовторение: ' + rec.type + (rec.interval ? ' x' + rec.interval : '')\n          if (rec.daysOfWeek && rec.daysOfWeek.length) recText += ' в ' + rec.daysOfWeek.join(',')\n          if (rec.count) recText += ', повторений: ' + rec.count\n          else if (rec.until) recText += ', до ' + rec.until"],
+        ["          '主题: ' + a.subject + '\\n时间: ' + a.start + ' ~ ' + a.end\n            + (a.location ? '\\n地点: ' + a.location : '')\n            + (required.length ? '\\n必选参会人: ' + required.join('; ') : '')\n            + (optional.length ? '\\n可选参会人: ' + optional.join('; ') : '')\n            + (hasRecipients ? '（将发出会议邀请）' : '')\n            + recText\n            + (a.body ? '\\n\\n正文:\\n' + String(a.body) : ''),", "          'Тема: ' + a.subject + '\\nВремя: ' + a.start + ' — ' + a.end\n            + (a.location ? '\\nМесто: ' + a.location : '')\n            + (required.length ? '\\nОбязательные участники: ' + required.join('; ') : '')\n            + (optional.length ? '\\nНеобязательные участники: ' + optional.join('; ') : '')\n            + (hasRecipients ? ' (будет отправлено приглашение)' : '')\n            + recText\n            + (a.body ? '\\n\\nОписание:\\n' + String(a.body) : ''),"],
+        ["        const label = a.response === 'accept' ? '接受' : a.response === 'tentative' ? '暂定接受' : a.response === 'decline' ? '拒绝' : String(a.response)\n        return needsConfirmation('meeting-respond',\n          '会议响应: ' + label + '\\n请求 entryId: ' + a.entryId + '\\n（响应将发送给组织者；先用 outlook_meeting_requests 查看详情）')", "        const label = a.response === 'accept' ? 'Принять' : a.response === 'tentative' ? 'Принять с оговоркой' : a.response === 'decline' ? 'Отклонить' : String(a.response)\n        return needsConfirmation('meeting-respond',\n          'Ответ на встречу: ' + label + '\\nentryId запроса: ' + a.entryId + '\\n(ответ уйдёт организатору; подробности — в outlook_meeting_requests)')"],
+        ["        if (a.subject) changes.push('主题→ ' + a.subject)\n        if (a.start) changes.push('开始→ ' + a.start)\n        if (a.end) changes.push('结束→ ' + a.end)\n        if (a.location) changes.push('地点→ ' + a.location)\n        if (a.body) changes.push('正文→ ' + String(a.body).slice(0, 300))\n        if (changes.length === 0) return { status: 'error', error: 'nothing to update: provide at least one changed field.' }\n        return needsConfirmation('meeting-update',\n          '更新会议 entryId: ' + a.entryId + '\\n变更:\\n- ' + changes.join('\\n- ')\n          + '\\n（若为多人会议，将自动通知所有参会人）')", "        if (a.subject) changes.push('Тема → ' + a.subject)\n        if (a.start) changes.push('Начало → ' + a.start)\n        if (a.end) changes.push('Окончание → ' + a.end)\n        if (a.location) changes.push('Место → ' + a.location)\n        if (a.body) changes.push('Описание → ' + String(a.body).slice(0, 300))\n        if (changes.length === 0) return { status: 'error', error: 'нечего обновлять: укажите хотя бы одно изменяемое поле.' }\n        return needsConfirmation('meeting-update',\n          'Обновление встречи, entryId: ' + a.entryId + '\\nИзменения:\\n- ' + changes.join('\\n- ')\n          + '\\n(если встреча с участниками, Outlook уведомит всех)')"],
+        ["          '取消会议 entryId: ' + a.entryId + '\\n（若为多人会议，将向所有参会人发出取消通知）')", "          'Отмена встречи, entryId: ' + a.entryId + '\\n(если встреча с участниками, всем уйдёт уведомление об отмене)')"],
+        ["(e.g. 刘文明)", "(например, Иванов)"],
+        ["        const modeText = a.mode === 'forward' ? '转发给: ' + (a.to || '(未填)')\n          : a.mode === 'reply-all' ? '全部回复' : '回复'", "        const modeText = a.mode === 'forward' ? 'Пересылка — кому: ' + (a.to || '(не заполнено)')\n          : a.mode === 'reply-all' ? 'Ответ всем' : 'Ответ'"],
+        ["          modeText + '\\n原邮件: [' + prev.sender + '] ' + prev.subject\n          + (a.to && a.mode === 'forward' ? '\\n转发收件人: ' + a.to : '')\n          + (a.cc ? '\\n抄送: ' + a.cc : '')\n          + (a.bcc ? '\\n密送: ' + a.bcc : '')\n          + (att.lines ? '\\n附加附件: ' + att.lines : '')\n          + (a.mode === 'forward' ? '\\n（转发自动携带原邮件附件）' : '')\n          + '\\n\\n你的内容:\\n' + String(a.body || '')\n          + '\\n\\n--- 以下自动引用原邮件 ---\\nFrom: ' + prev.sender\n          + '\\nSent: ' + (prev.received || '')\n          + '\\nTo: ' + prev.to\n          + '\\nSubject: ' + prev.subject,", "          modeText + '\\nИсходное письмо: [' + prev.sender + '] ' + prev.subject\n          + (a.to && a.mode === 'forward' ? '\\nКому (пересылка): ' + a.to : '')\n          + (a.cc ? '\\nКопия: ' + a.cc : '')\n          + (a.bcc ? '\\nСкрытая копия: ' + a.bcc : '')\n          + (att.lines ? '\\nДоп. вложения: ' + att.lines : '')\n          + (a.mode === 'forward' ? '\\n(при пересылке вложения исходного письма прилагаются автоматически)' : '')\n          + '\\n\\nВаш текст:\\n' + String(a.body || '')\n          + '\\n\\n--- Ниже автоматически цитируется исходное письмо ---\\nОт: ' + prev.sender\n          + '\\nДата: ' + (prev.received || '')\n          + '\\nКому: ' + prev.to\n          + '\\nТема: ' + prev.subject,"],
+        ["attachment not found: ' + p", "вложение не найдено: ' + p"],
+        ["title: 'Outlook account'", "title: 'Учётная запись Outlook'"],
+        ["title: 'Open Outlook mail'", "title: 'Открыть письмо в Outlook'"],
+        ["title: 'Search Outlook mail'", "title: 'Поиск писем в Outlook'"],
+        ["title: 'Read Outlook mail'", "title: 'Чтение письма Outlook'"],
+        ["title: 'Draft Outlook mail'", "title: 'Черновик письма Outlook'"],
+        ["title: 'Send Outlook mail (asks first)'", "title: 'Отправка письма Outlook (с подтверждением)'"],
+        ["title: 'Query Outlook calendar'", "title: 'Календарь Outlook'"],
+        ["title: 'Create Outlook calendar entry (asks first)'", "title: 'Создание встречи в Outlook (с подтверждением)'"],
+        ["title: 'List Outlook meeting requests'", "title: 'Приглашения на встречи'"],
+        ["title: 'Respond to Outlook meeting (asks first)'", "title: 'Ответ на приглашение (с подтверждением)'"],
+        ["title: 'Update Outlook meeting (asks first)'", "title: 'Изменение встречи (с подтверждением)'"],
+        ["title: 'Cancel Outlook meeting (asks first)'", "title: 'Отмена встречи (с подтверждением)'"],
+        ["title: 'Search Outlook address book'", "title: 'Поиск в адресной книге Outlook'"],
+        ["title: 'Query Outlook free/busy'", "title: 'Занятость коллег (free/busy)'"],
+        ["title: 'Search Outlook meeting rooms'", "title: 'Поиск переговорных комнат'"],
+        ["title: 'Reply/forward Outlook mail (asks user first)'", "title: 'Ответ или пересылка письма Outlook (с подтверждением)'"],
+        ["title: 'Save Outlook attachment'", "title: 'Сохранение вложения из Outlook'"],
+        ["title: 'Check new Outlook mail'", "title: 'Проверка новых писем Outlook'"]
+      ]
+    },
+    {
+      "file": "lib/olk.ps1",
+      "encoding": "utf8bom",
+      "pairs": [
+        ["# (\"Inbox/ProjectA\", \"已发送/子目录\") walked segment", "# (\"Inbox/ProjectA\", \"Отправленные/Подпапка\") walked segment"],
+        ["$folderSpec -ieq 'Inbox' -or $folderSpec -ieq '收件箱'", "$folderSpec -ieq 'Inbox' -or $folderSpec -ieq 'Входящие'"],
+        ["$folderSpec -ieq 'Sent Items' -or $folderSpec -ieq 'Sent' -or $folderSpec -ieq '已发送' -or $folderSpec -ieq '已发送邮件'", "$folderSpec -ieq 'Sent Items' -or $folderSpec -ieq 'Sent' -or $folderSpec -ieq 'Отправленные' -or $folderSpec -ieq 'Отправлено'"],
+        ["$folderSpec -ieq 'Drafts' -or $folderSpec -ieq '草稿'", "$folderSpec -ieq 'Drafts' -or $folderSpec -ieq 'Черновики'"],
+        ["$segs[0] -ieq 'Inbox' -or $segs[0] -ieq '收件箱'", "$segs[0] -ieq 'Inbox' -or $segs[0] -ieq 'Входящие'"],
+        ["$segs[0] -ieq 'Sent Items' -or $segs[0] -ieq 'Sent' -or $segs[0] -ieq '已发送' -or $segs[0] -ieq '已发送邮件'", "$segs[0] -ieq 'Sent Items' -or $segs[0] -ieq 'Sent' -or $segs[0] -ieq 'Отправленные' -or $segs[0] -ieq 'Отправлено'"],
+        ["$segs[0] -ieq 'Drafts' -or $segs[0] -ieq '草稿'", "$segs[0] -ieq 'Drafts' -or $segs[0] -ieq 'Черновики'"],
+        ["foreach ($al in $ns.AddressLists) { if ($al.Name -match 'Global|全局') { $gal = $al; break } }", "foreach ($al in $ns.AddressLists) { if ($al.Name -match 'Global|全局|Глобальн') { $gal = $al; break } }"],
+        ["      if (-not $gal) { $gal = @($ns.AddressLists)[0] }", "      if (-not $gal) {\n        # Русская локализация: GAL может называться иначе. Берём адресный\n        # список с наибольшим числом записей (GAL обычно самый большой).\n        $best = $null\n        foreach ($al in $ns.AddressLists) {\n          if ($null -eq $best) { $best = $al; continue }\n          if ($al.AddressEntries.Count -gt $best.AddressEntries.Count) { $best = $al }\n        }\n        $gal = $best\n      }"],
+        ["foreach ($al in $ns.AddressLists) { if ($al.Name -match 'Room|会议室') { $roomList = $al; break } }", "foreach ($al in $ns.AddressLists) { if ($al.Name -match 'Room|会议室|Комнат|Переговорн') { $roomList = $al; break } }"],
+        ["      if (-not $roomList) { throw 'no room address list found (looked for address lists named Room/会议室)' }", "      if (-not $roomList) {\n        $names = (@($ns.AddressLists) | ForEach-Object { $_.Name }) -join '; '\n        throw \"no room address list found (looked for names like Room/Комнаты). Address lists: $names\"\n      }"],
+        ["      $quote = \"-----Original Message-----`r`n\" +\n        \"From: $([string]$it.SenderName)`r`n\" +\n        \"Sent: $origSent`r`n\" +\n        \"To: $([string]$it.To)`r`n\" +\n        \"Subject: $([string]$it.Subject)`r`n`r`n\" +\n        \"$([string]$it.Body)\"", "      $quote = \"----- Исходное сообщение -----`r`n\" +\n        \"От: $([string]$it.SenderName)`r`n\" +\n        \"Дата: $origSent`r`n\" +\n        \"Кому: $([string]$it.To)`r`n\" +\n        \"Тема: $([string]$it.Subject)`r`n`r`n\" +\n        \"$([string]$it.Body)\""],
+        ["folder not found: '$seg' (in path '$folderSpec')", "папка не найдена: '$seg' (в пути '$folderSpec')"],
+        ["attachment not found: $p_", "вложение не найдено: $p_"],
+        ["attachment not found on mail: $name", "вложение не найдено в письме: $name"]
+      ]
+    }
+  ]
+}

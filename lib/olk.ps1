@@ -67,15 +67,15 @@ try {
       if ($limit -lt 1) { $limit = 1 }
       if ($limit -gt 50) { $limit = 50 }
       # Folder resolution: well-known defaults by name, otherwise a path
-      # ("Inbox/ProjectA", "已发送/子目录") walked segment by segment from
+      # ("Inbox/ProjectA", "Отправленные/Подпапка") walked segment by segment from
       # the primary store root. A missing segment throws with the segment
       # name, so a typo fails loudly instead of searching the wrong folder.
       $folderSpec = if ($args_.folder) { ([string]$args_.folder) -replace '/', '\' } else { 'Inbox' }
-      if ($folderSpec -ieq 'Inbox' -or $folderSpec -ieq '收件箱') {
+      if ($folderSpec -ieq 'Inbox' -or $folderSpec -ieq 'Входящие') {
         $folder = $ns.GetDefaultFolder(6)
-      } elseif ($folderSpec -ieq 'Sent Items' -or $folderSpec -ieq 'Sent' -or $folderSpec -ieq '已发送' -or $folderSpec -ieq '已发送邮件') {
+      } elseif ($folderSpec -ieq 'Sent Items' -or $folderSpec -ieq 'Sent' -or $folderSpec -ieq 'Отправленные' -or $folderSpec -ieq 'Отправлено') {
         $folder = $ns.GetDefaultFolder(5)
-      } elseif ($folderSpec -ieq 'Drafts' -or $folderSpec -ieq '草稿') {
+      } elseif ($folderSpec -ieq 'Drafts' -or $folderSpec -ieq 'Черновики') {
         $folder = $ns.GetDefaultFolder(16)
       } else {
         $f = $ns.Folders.Item(1)
@@ -83,12 +83,12 @@ try {
         if ($segs.Count -gt 0) {
           # First segment may name a well-known default folder; start the
           # walk there so "Inbox/ProjectA" works on localized profiles too.
-          if ($segs[0] -ieq 'Inbox' -or $segs[0] -ieq '收件箱') { $f = $ns.GetDefaultFolder(6); $segs = @($segs | Select-Object -Skip 1) }
-          elseif ($segs[0] -ieq 'Sent Items' -or $segs[0] -ieq 'Sent' -or $segs[0] -ieq '已发送' -or $segs[0] -ieq '已发送邮件') { $f = $ns.GetDefaultFolder(5); $segs = @($segs | Select-Object -Skip 1) }
-          elseif ($segs[0] -ieq 'Drafts' -or $segs[0] -ieq '草稿') { $f = $ns.GetDefaultFolder(16); $segs = @($segs | Select-Object -Skip 1) }
+          if ($segs[0] -ieq 'Inbox' -or $segs[0] -ieq 'Входящие') { $f = $ns.GetDefaultFolder(6); $segs = @($segs | Select-Object -Skip 1) }
+          elseif ($segs[0] -ieq 'Sent Items' -or $segs[0] -ieq 'Sent' -or $segs[0] -ieq 'Отправленные' -or $segs[0] -ieq 'Отправлено') { $f = $ns.GetDefaultFolder(5); $segs = @($segs | Select-Object -Skip 1) }
+          elseif ($segs[0] -ieq 'Drafts' -or $segs[0] -ieq 'Черновики') { $f = $ns.GetDefaultFolder(16); $segs = @($segs | Select-Object -Skip 1) }
         }
         foreach ($seg in $segs) {
-          try { $f = $f.Folders.Item($seg) } catch { throw "folder not found: '$seg' (in path '$folderSpec')" }
+          try { $f = $f.Folders.Item($seg) } catch { throw "папка не найдена: '$seg' (в пути '$folderSpec')" }
         }
         $folder = $f
       }
@@ -186,7 +186,7 @@ try {
       $draft.Body = [string]$args_.body
       if ($args_.attachments) {
         foreach ($p_ in @($args_.attachments)) {
-          if (-not (Test-Path -LiteralPath $p_)) { throw "attachment not found: $p_" }
+          if (-not (Test-Path -LiteralPath $p_)) { throw "вложение не найдено: $p_" }
           $null = $draft.Attachments.Add($p_)
         }
         $out.attachments = @($draft.Attachments | ForEach-Object { $_.DisplayName })
@@ -474,8 +474,17 @@ try {
       $ascii = $q -match '^[A-Za-z0-9.@_\-]+$'
       $rx = [regex]::Escape($q)
       $gal = $null
-      foreach ($al in $ns.AddressLists) { if ($al.Name -match 'Global|全局') { $gal = $al; break } }
-      if (-not $gal) { $gal = @($ns.AddressLists)[0] }
+      foreach ($al in $ns.AddressLists) { if ($al.Name -match 'Global|全局|Глобальн') { $gal = $al; break } }
+      if (-not $gal) {
+        # Русская локализация: GAL может называться иначе. Берём адресный
+        # список с наибольшим числом записей (GAL обычно самый большой).
+        $best = $null
+        foreach ($al in $ns.AddressLists) {
+          if ($null -eq $best) { $best = $al; continue }
+          if ($al.AddressEntries.Count -gt $best.AddressEntries.Count) { $best = $al }
+        }
+        $gal = $best
+      }
       $people = @()
       foreach ($e in $gal.AddressEntries) {
         $hit = $false; $smtp = ''
@@ -555,8 +564,11 @@ try {
       $t2 = if ($args_.end) { [string]$args_.end } else { '18:00' }
       if ($dt -ne '' -and $dt -notmatch '^\d{4}-\d{2}-\d{2}$') { throw "date must be yyyy-MM-dd" }
       $roomList = $null
-      foreach ($al in $ns.AddressLists) { if ($al.Name -match 'Room|会议室') { $roomList = $al; break } }
-      if (-not $roomList) { throw 'no room address list found (looked for address lists named Room/会议室)' }
+      foreach ($al in $ns.AddressLists) { if ($al.Name -match 'Room|会议室|Комнат|Переговорн') { $roomList = $al; break } }
+      if (-not $roomList) {
+        $names = (@($ns.AddressLists) | ForEach-Object { $_.Name }) -join '; '
+        throw "no room address list found (looked for names like Room/Комнаты). Address lists: $names"
+      }
       $rx = $null
       if ($q -ne '') { $rx = [regex]::Escape($q) }
       $rooms = @()
@@ -643,17 +655,17 @@ try {
       if ($args_.bcc) { $r.BCC = [string]$args_.bcc }
       # Auto-quote the original below the new text (Outlook classic style).
       $origSent = if ($it.ReceivedTime) { $it.ReceivedTime.ToString('yyyy-MM-dd HH:mm') } else { '' }
-      $quote = "-----Original Message-----`r`n" +
-        "From: $([string]$it.SenderName)`r`n" +
-        "Sent: $origSent`r`n" +
-        "To: $([string]$it.To)`r`n" +
-        "Subject: $([string]$it.Subject)`r`n`r`n" +
+      $quote = "----- Исходное сообщение -----`r`n" +
+        "От: $([string]$it.SenderName)`r`n" +
+        "Дата: $origSent`r`n" +
+        "Кому: $([string]$it.To)`r`n" +
+        "Тема: $([string]$it.Subject)`r`n`r`n" +
         "$([string]$it.Body)"
       $newBody = [string]$args_.body
       if ($newBody) { $r.Body = $newBody + "`r`n`r`n" + $quote } else { $r.Body = $quote }
       if ($args_.attachments) {
         foreach ($p_ in @($args_.attachments)) {
-          if (-not (Test-Path -LiteralPath $p_)) { throw "attachment not found: $p_" }
+          if (-not (Test-Path -LiteralPath $p_)) { throw "вложение не найдено: $p_" }
           $null = $r.Attachments.Add($p_)
         }
       }
@@ -678,7 +690,7 @@ try {
       if (-not (Test-Path -LiteralPath $dir -PathType Container)) { throw "target directory not found: $dir" }
       $found = $null
       foreach ($a_ in $it.Attachments) { if ($a_.DisplayName -eq $name) { $found = $a_; break } }
-      if (-not $found) { throw "attachment not found on mail: $name" }
+      if (-not $found) { throw "вложение не найдено в письме: $name" }
       # Sanitize: keep only the file NAME (no path traversal from a crafted
       # display name), and never silently overwrite an existing file.
       $safe = [System.IO.Path]::GetFileName($name)

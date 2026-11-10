@@ -180,7 +180,7 @@ function attachmentLines(paths) {
   const lines = []
   for (const p of paths) {
     let st
-    try { st = statSync(p) } catch { return { error: 'attachment not found: ' + p } }
+    try { st = statSync(p) } catch { return { error: 'вложение не найдено: ' + p } }
     const kb = Math.max(1, Math.round(st.size / 1024))
     const base = String(p).replace(/^.*[\\/]/, '')
     lines.push(base + ' (' + kb + ' KB)')
@@ -406,12 +406,12 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute() { return olk('account') },
-    presentCall: () => ({ card: 'generic', title: 'Outlook account', kind: 'other', rawInput: {} }),
+    presentCall: () => ({ card: 'generic', title: 'Учётная запись Outlook', kind: 'other', rawInput: {} }),
   })
 
   ctx.tools.register({
     name: 'outlook_open_mail',
-    description: 'Open one email in a desktop Outlook inspector window by entryId (from outlook_search_mail / outlook_check_new). Local action: nothing leaves the machine, no confirmation needed. When presenting search results in chat, prefer composing a clickable markdown link per mail, e.g. [在Outlook打开](http://127.0.0.1:3080/olk-notify/open?entryId=<entryId>) — the user can click it to open the mail directly.',
+    description: 'Open one email in a desktop Outlook inspector window by entryId (from outlook_search_mail / outlook_check_new). Local action: nothing leaves the machine, no confirmation needed. When presenting search results in chat, prefer composing a clickable markdown link per mail, e.g. [Открыть в Outlook](http://127.0.0.1:3080/olk-notify/open?entryId=<entryId>) — the user can click it to open the mail directly.',
     parameters: {
       type: 'object',
       additionalProperties: true,
@@ -425,18 +425,18 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute(a) { return olk('open_mail', a) },
-    presentCall: (a) => ({ card: 'generic', title: 'Open Outlook mail', kind: 'other', rawInput: { entryId: a.entryId } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Открыть письмо в Outlook', kind: 'other', rawInput: { entryId: a.entryId } }),
   })
 
   ctx.tools.register({
     name: 'outlook_search_mail',
-    description: 'Search emails in the local Outlook mailbox (read-only). Default: last 14 days of Inbox, newest first. Supports arbitrary folder paths ("Inbox/ProjectA", "已发送"), recipient-side matching (to), and exact date ranges (dateFrom/dateTo override days). Returns entryId values usable with outlook_read_mail. Tip: when listing results to the user, append a clickable open link per mail: [打开](http://127.0.0.1:3080/olk-notify/open?entryId=<entryId>).',
+    description: 'Search emails in the local Outlook mailbox (read-only). Default: last 14 days of Inbox, newest first. Supports arbitrary folder paths ("Inbox/ProjectA", "Отправленные"), recipient-side matching (to), and exact date ranges (dateFrom/dateTo override days). Returns entryId values usable with outlook_read_mail. Tip: when listing results to the user, append a clickable open link per mail: [Открыть](http://127.0.0.1:3080/olk-notify/open?entryId=<entryId>).',
     parameters: {
       type: 'object',
       additionalProperties: true,
       properties: {
         days: { type: 'number', description: 'How many days back to search. Default 14. Ignored when dateFrom/dateTo is given.' },
-        folder: { type: 'string', description: 'Folder to search: "Inbox" (default), "已发送"/"Sent Items", "草稿"/"Drafts", or any path like "Inbox/ProjectA" (segments separated by / or \\). Paths are walked from the primary mailbox root.' },
+        folder: { type: 'string', description: 'Folder to search: "Inbox" (default), "Отправленные"/"Sent Items", "Черновики"/"Drafts", or any path like "Inbox/ProjectA" (segments separated by / or \\). Paths are walked from the primary mailbox root.' },
         from: { type: 'string', description: 'Filter: sender name contains this text.' },
         to: { type: 'string', description: 'Filter: recipient display name contains this text (recipient-side search).' },
         subjectContains: { type: 'string', description: 'Filter: subject contains this text.' },
@@ -450,7 +450,7 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute(a) { return olk('search_mail', a) },
-    presentCall: (a) => ({ card: 'generic', title: 'Search Outlook mail', kind: 'other', rawInput: a }),
+    presentCall: (a) => ({ card: 'generic', title: 'Поиск писем в Outlook', kind: 'other', rawInput: a }),
   })
 
   ctx.tools.register({
@@ -470,7 +470,7 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute(a) { return olk('read_mail', a) },
-    presentCall: (a) => ({ card: 'generic', title: 'Read Outlook mail', kind: 'other', rawInput: { entryId: a.entryId } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Чтение письма Outlook', kind: 'other', rawInput: { entryId: a.entryId } }),
   })
 
   ctx.tools.register({
@@ -494,7 +494,7 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute(a) { return olk('draft_mail', a) },
-    presentCall: (a) => ({ card: 'generic', title: 'Draft Outlook mail', kind: 'other', rawInput: { to: a.to, subject: a.subject } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Черновик письма Outlook', kind: 'other', rawInput: { to: a.to, subject: a.subject } }),
   })
 
   ctx.tools.register({
@@ -532,16 +532,16 @@ export function apply(ctx) {
         if (att.error) return { status: 'error', error: att.error }
         confirmations.set('send-mail', h)
         return needsConfirmation('send-mail',
-          '收件人: ' + a.to + (a.cc ? '\n抄送: ' + a.cc : '') + (a.bcc ? '\n密送: ' + a.bcc : '') + '\n主题: ' + a.subject
-          + (att.lines ? '\n附件: ' + att.lines : '')
-          + '\n\n正文:\n' + String(a.body),
+          'Кому: ' + a.to + (a.cc ? '\nКопия: ' + a.cc : '') + (a.bcc ? '\nСкрытая копия: ' + a.bcc : '') + '\nТема: ' + a.subject
+          + (att.lines ? '\nВложения: ' + att.lines : '')
+          + '\n\nТекст письма:\n' + String(a.body),
           ['to', 'cc', 'bcc', 'subject', 'body'])
       }
       const draft = await olk('draft_mail', a)
       if (draft.status !== 'ok') return draft
       return dispatchConfirmed('send-mail', 'send_draft', { entryId: draft.draftEntryId }, { confirmed: true })
     },
-    presentCall: (a) => ({ card: 'generic', title: 'Send Outlook mail (asks first)', kind: 'other', rawInput: { to: a.to, subject: a.subject } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Отправка письма Outlook (с подтверждением)', kind: 'other', rawInput: { to: a.to, subject: a.subject } }),
   })
 
   ctx.tools.register({
@@ -559,7 +559,7 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute(a) { return olk('calendar_query', a) },
-    presentCall: (a) => ({ card: 'generic', title: 'Query Outlook calendar', kind: 'other', rawInput: a }),
+    presentCall: (a) => ({ card: 'generic', title: 'Календарь Outlook', kind: 'other', rawInput: a }),
   })
 
   ctx.tools.register({
@@ -602,24 +602,24 @@ export function apply(ctx) {
         confirmations.set('calendar-invite', h)
         let recText = ''
         if (rec) {
-          recText = '\n周期: ' + rec.type + (rec.interval ? ' x' + rec.interval : '')
-          if (rec.daysOfWeek && rec.daysOfWeek.length) recText += ' on ' + rec.daysOfWeek.join(',')
-          if (rec.count) recText += ', ' + rec.count + '次'
-          else if (rec.until) recText += ', until ' + rec.until
+          recText = '\nПовторение: ' + rec.type + (rec.interval ? ' x' + rec.interval : '')
+          if (rec.daysOfWeek && rec.daysOfWeek.length) recText += ' в ' + rec.daysOfWeek.join(',')
+          if (rec.count) recText += ', повторений: ' + rec.count
+          else if (rec.until) recText += ', до ' + rec.until
         }
         return needsConfirmation('calendar-invite',
-          '主题: ' + a.subject + '\n时间: ' + a.start + ' ~ ' + a.end
-            + (a.location ? '\n地点: ' + a.location : '')
-            + (required.length ? '\n必选参会人: ' + required.join('; ') : '')
-            + (optional.length ? '\n可选参会人: ' + optional.join('; ') : '')
-            + (hasRecipients ? '（将发出会议邀请）' : '')
+          'Тема: ' + a.subject + '\nВремя: ' + a.start + ' — ' + a.end
+            + (a.location ? '\nМесто: ' + a.location : '')
+            + (required.length ? '\nОбязательные участники: ' + required.join('; ') : '')
+            + (optional.length ? '\nНеобязательные участники: ' + optional.join('; ') : '')
+            + (hasRecipients ? ' (будет отправлено приглашение)' : '')
             + recText
-            + (a.body ? '\n\n正文:\n' + String(a.body) : ''),
+            + (a.body ? '\n\nОписание:\n' + String(a.body) : ''),
           ['subject', 'location', 'body'])
       }
       return dispatchConfirmed('calendar-invite', 'calendar_create', a, { confirmed: hasRecipients })
     },
-    presentCall: (a) => ({ card: 'generic', title: 'Create Outlook calendar entry (asks first)', kind: 'other', rawInput: { subject: a.subject, start: a.start, end: a.end } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Создание встречи в Outlook (с подтверждением)', kind: 'other', rawInput: { subject: a.subject, start: a.start, end: a.end } }),
   })
 
   ctx.tools.register({
@@ -631,7 +631,7 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute() { return olk('meeting_requests') },
-    presentCall: () => ({ card: 'generic', title: 'List Outlook meeting requests', kind: 'other', rawInput: {} }),
+    presentCall: () => ({ card: 'generic', title: 'Приглашения на встречи', kind: 'other', rawInput: {} }),
   })
 
   ctx.tools.register({
@@ -655,13 +655,13 @@ export function apply(ctx) {
       const h = contentHash({ entryId: a.entryId, response: a.response })
       if (a.confirmed !== true || confirmations.get('meeting-respond') !== h) {
         confirmations.set('meeting-respond', h)
-        const label = a.response === 'accept' ? '接受' : a.response === 'tentative' ? '暂定接受' : a.response === 'decline' ? '拒绝' : String(a.response)
+        const label = a.response === 'accept' ? 'Принять' : a.response === 'tentative' ? 'Принять с оговоркой' : a.response === 'decline' ? 'Отклонить' : String(a.response)
         return needsConfirmation('meeting-respond',
-          '会议响应: ' + label + '\n请求 entryId: ' + a.entryId + '\n（响应将发送给组织者；先用 outlook_meeting_requests 查看详情）')
+          'Ответ на встречу: ' + label + '\nentryId запроса: ' + a.entryId + '\n(ответ уйдёт организатору; подробности — в outlook_meeting_requests)')
       }
       return dispatchConfirmed('meeting-respond', 'respond_meeting', a, { confirmed: true })
     },
-    presentCall: (a) => ({ card: 'generic', title: 'Respond to Outlook meeting (asks first)', kind: 'other', rawInput: { entryId: a.entryId, response: a.response } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Ответ на приглашение (с подтверждением)', kind: 'other', rawInput: { entryId: a.entryId, response: a.response } }),
   })
 
   ctx.tools.register({
@@ -690,19 +690,19 @@ export function apply(ctx) {
       if (a.confirmed !== true || confirmations.get('meeting-update') !== h) {
         confirmations.set('meeting-update', h)
         const changes = []
-        if (a.subject) changes.push('主题→ ' + a.subject)
-        if (a.start) changes.push('开始→ ' + a.start)
-        if (a.end) changes.push('结束→ ' + a.end)
-        if (a.location) changes.push('地点→ ' + a.location)
-        if (a.body) changes.push('正文→ ' + String(a.body).slice(0, 300))
-        if (changes.length === 0) return { status: 'error', error: 'nothing to update: provide at least one changed field.' }
+        if (a.subject) changes.push('Тема → ' + a.subject)
+        if (a.start) changes.push('Начало → ' + a.start)
+        if (a.end) changes.push('Окончание → ' + a.end)
+        if (a.location) changes.push('Место → ' + a.location)
+        if (a.body) changes.push('Описание → ' + String(a.body).slice(0, 300))
+        if (changes.length === 0) return { status: 'error', error: 'нечего обновлять: укажите хотя бы одно изменяемое поле.' }
         return needsConfirmation('meeting-update',
-          '更新会议 entryId: ' + a.entryId + '\n变更:\n- ' + changes.join('\n- ')
-          + '\n（若为多人会议，将自动通知所有参会人）')
+          'Обновление встречи, entryId: ' + a.entryId + '\nИзменения:\n- ' + changes.join('\n- ')
+          + '\n(если встреча с участниками, Outlook уведомит всех)')
       }
       return dispatchConfirmed('meeting-update', 'meeting_update', a, { confirmed: true })
     },
-    presentCall: (a) => ({ card: 'generic', title: 'Update Outlook meeting (asks first)', kind: 'other', rawInput: { entryId: a.entryId } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Изменение встречи (с подтверждением)', kind: 'other', rawInput: { entryId: a.entryId } }),
   })
 
   ctx.tools.register({
@@ -726,11 +726,11 @@ export function apply(ctx) {
       if (a.confirmed !== true || confirmations.get('meeting-cancel') !== h) {
         confirmations.set('meeting-cancel', h)
         return needsConfirmation('meeting-cancel',
-          '取消会议 entryId: ' + a.entryId + '\n（若为多人会议，将向所有参会人发出取消通知）')
+          'Отмена встречи, entryId: ' + a.entryId + '\n(если встреча с участниками, всем уйдёт уведомление об отмене)')
       }
       return dispatchConfirmed('meeting-cancel', 'meeting_cancel', a, { confirmed: true })
     },
-    presentCall: (a) => ({ card: 'generic', title: 'Cancel Outlook meeting (asks first)', kind: 'other', rawInput: { entryId: a.entryId } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Отмена встречи (с подтверждением)', kind: 'other', rawInput: { entryId: a.entryId } }),
   })
 
   ctx.tools.register({
@@ -740,7 +740,7 @@ export function apply(ctx) {
       type: 'object',
       additionalProperties: true,
       properties: {
-        query: { type: 'string', description: 'Search text: partial display name (e.g. 刘文明), email, or alias.' },
+        query: { type: 'string', description: 'Search text: partial display name (например, Иванов), email, or alias.' },
         limit: { type: 'number', description: 'Max results. Default 20.' },
       },
       required: ['query'],
@@ -750,7 +750,7 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute(a) { return olk('search_people', a) },
-    presentCall: (a) => ({ card: 'generic', title: 'Search Outlook address book', kind: 'other', rawInput: { query: a.query } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Поиск в адресной книге Outlook', kind: 'other', rawInput: { query: a.query } }),
   })
 
   ctx.tools.register({
@@ -770,7 +770,7 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute(a) { return olk('freebusy', a) },
-    presentCall: (a) => ({ card: 'generic', title: 'Query Outlook free/busy', kind: 'other', rawInput: { email: a.email, days: a.days } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Занятость коллег (free/busy)', kind: 'other', rawInput: { email: a.email, days: a.days } }),
   })
 
   ctx.tools.register({
@@ -792,7 +792,7 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute(a) { return olk('search_rooms', a) },
-    presentCall: (a) => ({ card: 'generic', title: 'Search Outlook meeting rooms', kind: 'other', rawInput: { query: a.query, date: a.date } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Поиск переговорных комнат', kind: 'other', rawInput: { query: a.query, date: a.date } }),
   })
 
   ctx.tools.register({
@@ -831,26 +831,26 @@ export function apply(ctx) {
         if (prev.status !== 'ok') return prev
         const att = attachmentLines(a.attachments)
         if (att.error) return { status: 'error', error: att.error }
-        const modeText = a.mode === 'forward' ? '转发给: ' + (a.to || '(未填)')
-          : a.mode === 'reply-all' ? '全部回复' : '回复'
+        const modeText = a.mode === 'forward' ? 'Пересылка — кому: ' + (a.to || '(не заполнено)')
+          : a.mode === 'reply-all' ? 'Ответ всем' : 'Ответ'
         confirmations.set('reply-mail', h)
         return needsConfirmation('reply-mail',
-          modeText + '\n原邮件: [' + prev.sender + '] ' + prev.subject
-          + (a.to && a.mode === 'forward' ? '\n转发收件人: ' + a.to : '')
-          + (a.cc ? '\n抄送: ' + a.cc : '')
-          + (a.bcc ? '\n密送: ' + a.bcc : '')
-          + (att.lines ? '\n附加附件: ' + att.lines : '')
-          + (a.mode === 'forward' ? '\n（转发自动携带原邮件附件）' : '')
-          + '\n\n你的内容:\n' + String(a.body || '')
-          + '\n\n--- 以下自动引用原邮件 ---\nFrom: ' + prev.sender
-          + '\nSent: ' + (prev.received || '')
-          + '\nTo: ' + prev.to
-          + '\nSubject: ' + prev.subject,
+          modeText + '\nИсходное письмо: [' + prev.sender + '] ' + prev.subject
+          + (a.to && a.mode === 'forward' ? '\nКому (пересылка): ' + a.to : '')
+          + (a.cc ? '\nКопия: ' + a.cc : '')
+          + (a.bcc ? '\nСкрытая копия: ' + a.bcc : '')
+          + (att.lines ? '\nДоп. вложения: ' + att.lines : '')
+          + (a.mode === 'forward' ? '\n(при пересылке вложения исходного письма прилагаются автоматически)' : '')
+          + '\n\nВаш текст:\n' + String(a.body || '')
+          + '\n\n--- Ниже автоматически цитируется исходное письмо ---\nОт: ' + prev.sender
+          + '\nДата: ' + (prev.received || '')
+          + '\nКому: ' + prev.to
+          + '\nТема: ' + prev.subject,
           a.mode === 'forward' ? ['to', 'cc', 'bcc', 'body'] : ['cc', 'bcc', 'body'])
       }
       return dispatchConfirmed('reply-mail', 'reply_mail', a, { confirmed: true })
     },
-    presentCall: (a) => ({ card: 'generic', title: 'Reply/forward Outlook mail (asks user first)', kind: 'other', rawInput: { entryId: a.entryId, mode: a.mode, to: a.to } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Ответ или пересылка письма Outlook (с подтверждением)', kind: 'other', rawInput: { entryId: a.entryId, mode: a.mode, to: a.to } }),
   })
 
   ctx.tools.register({
@@ -871,12 +871,12 @@ export function apply(ctx) {
       render: (_a, v) => [{ type: 'text', text: JSON.stringify(v) }],
     },
     async execute(a) { return olk('save_attachment', a) },
-    presentCall: (a) => ({ card: 'generic', title: 'Save Outlook attachment', kind: 'other', rawInput: { entryId: a.entryId, name: a.name } }),
+    presentCall: (a) => ({ card: 'generic', title: 'Сохранение вложения из Outlook', kind: 'other', rawInput: { entryId: a.entryId, name: a.name } }),
   })
 
   ctx.tools.register({
     name: 'outlook_check_new',
-    description: 'Fetch new-mail arrivals pushed by the Outlook NewMailEx watcher since the last check, as a list (entryId, subject, sender, time). Fetching clears the pending queue and resets the sidebar badge. Returns unread totals too. Read-only. Tip: when presenting arrivals to the user, append a clickable open link per mail: [打开](http://127.0.0.1:3080/olk-notify/open?entryId=<entryId>).',
+    description: 'Fetch new-mail arrivals pushed by the Outlook NewMailEx watcher since the last check, as a list (entryId, subject, sender, time). Fetching clears the pending queue and resets the sidebar badge. Returns unread totals too. Read-only. Tip: when presenting arrivals to the user, append a clickable open link per mail: [Открыть](http://127.0.0.1:3080/olk-notify/open?entryId=<entryId>).',
     parameters: {
       type: 'object',
       additionalProperties: true,
@@ -890,7 +890,7 @@ export function apply(ctx) {
       const pending = notify.pending.splice(0, notify.pending.length)
       return { status: 'ok', count: pending.length, newMails: pending, unread: notify.unread }
     },
-    presentCall: () => ({ card: 'generic', title: 'Check new Outlook mail', kind: 'other', rawInput: {} }),
+    presentCall: () => ({ card: 'generic', title: 'Проверка новых писем Outlook', kind: 'other', rawInput: {} }),
   })
 
   console.info('[dsh-outlook] registered 18 Outlook COM tools')
